@@ -41,12 +41,18 @@
   const letterAudio = document.getElementById("letter-audio");
   const lockToast = document.getElementById("lock-toast");
   const profilesContainer = document.getElementById("profiles");
+  const navTimerValue = document.getElementById("nav-timer-value");
+  const timelineWrap = document.getElementById("timeline-wrap");
+  const favoritesWrap = document.getElementById("favorites-wrap");
+  const siteFooter = document.getElementById("site-footer");
 
   let lastFocusedEl = null;
   let activeProfile = "kristina";
   let audioCtx = null;
   let toastTimer = null;
   let lockToastTimer = null;
+  let currentView = "home";
+  const itemsById = {}; // id -> item, populated from rows + timeline for Favorites lookups
 
   /* ============================================================
      Synthesized "ta-dum" sound effect (no external audio file)
@@ -168,6 +174,45 @@
     lockToast.textContent = message;
     lockToast.classList.add("show");
     lockToastTimer = setTimeout(() => lockToast.classList.remove("show"), 3000);
+  }
+
+  /* ============================================================
+     Favorites — stored per-browser via localStorage
+     ============================================================ */
+  const FAVORITES_KEY = "kflix_favorites";
+
+  function getFavoriteIds() {
+    try {
+      const raw = JSON.parse(localStorage.getItem(FAVORITES_KEY));
+      return Array.isArray(raw) ? raw : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function isFavorited(id) {
+    return getFavoriteIds().includes(id);
+  }
+
+  function toggleFavorite(id) {
+    const ids = getFavoriteIds();
+    const idx = ids.indexOf(id);
+    if (idx > -1) ids.splice(idx, 1);
+    else ids.push(id);
+    try { localStorage.setItem(FAVORITES_KEY, JSON.stringify(ids)); } catch (e) {}
+    return ids.includes(id);
+  }
+
+  function buildItemsIndex() {
+    SITE_CONFIG.rows.forEach((row) => {
+      row.items.forEach((item) => {
+        item._layout = row.layout;
+        itemsById[item.id] = item;
+      });
+    });
+    (SITE_CONFIG.timeline || []).forEach((entry) => {
+      if (!itemsById[entry.id]) itemsById[entry.id] = entry;
+    });
   }
 
   /* ============================================================
@@ -461,6 +506,7 @@
     const card = document.createElement("div");
     card.className = `card ${isWide ? "card-wide" : "card-poster"}${item.isSpecial ? " card-special" : ""}`;
     card.dataset.title = item.title.toLowerCase();
+    card.dataset.itemId = item.id;
     card.tabIndex = 0;
     card.setAttribute("role", "button");
     card.setAttribute("aria-label", `${item.title} — open details`);
@@ -478,9 +524,20 @@
       <div class="card-hover-info">
         <p class="card-hover-blurb">${item.blurb || ""}</p>
       </div>
+      <button class="card-heart-btn${isFavorited(item.id) ? " is-favorited" : ""}" aria-label="Favorite ${item.title}">${isFavorited(item.id) ? "♥" : "♡"}</button>
       <button class="card-play-btn" aria-label="Play ${item.title}">▶</button>
       ${progressHTML}
     `;
+
+    const heartBtn = card.querySelector(".card-heart-btn");
+    heartBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const active = toggleFavorite(item.id);
+      heartBtn.classList.toggle("is-favorited", active);
+      heartBtn.textContent = active ? "♥" : "♡";
+      syncFavoriteState(item.id, active);
+      if (currentView === "favorites") renderFavoritesView();
+    });
 
     let hoverTimer = null;
     card.addEventListener("mouseenter", () => {
@@ -516,6 +573,153 @@
       requestAnimationFrame(() => { fill.style.width = target + "%"; });
     });
   }
+
+  /* Keeps every rendered copy of an item (row card, timeline entry,
+     favorites-grid card) visually in sync when its heart is toggled anywhere */
+  function syncFavoriteState(id, active) {
+    document.querySelectorAll(`[data-item-id="${id}"] .card-heart-btn`).forEach((btn) => {
+      btn.classList.toggle("is-favorited", active);
+      btn.textContent = active ? "♥" : "♡";
+    });
+    document.querySelectorAll(`[data-item-id="${id}"] .timeline-heart`).forEach((btn) => {
+      btn.classList.toggle("is-favorited", active);
+      btn.textContent = active ? "♥" : "♡";
+    });
+  }
+
+  function formatDate(dateStr) {
+    const d = new Date(dateStr + "T00:00:00");
+    return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  }
+
+  /* ============================================================
+     Timeline view
+     ============================================================ */
+  function buildTodayMarker() {
+    const el = document.createElement("div");
+    el.className = "timeline-today";
+    el.innerHTML = `<span class="timeline-today-dot"></span><span class="timeline-today-label">Today</span>`;
+    return el;
+  }
+
+  function buildTimelineEntry(entry, isFuture) {
+    const el = document.createElement("div");
+    el.className = `timeline-entry${isFuture ? " is-future" : ""}${entry.milestone ? " is-milestone" : ""}`;
+    el.dataset.itemId = entry.id;
+
+    const dateLabel = entry.date ? formatDate(entry.date) : (entry.dateLabel || "TBD");
+    const favActive = isFavorited(entry.id);
+
+    el.innerHTML = `
+      <div class="timeline-dot"></div>
+      <div class="timeline-card">
+        <div class="timeline-date">${dateLabel}${isFuture ? " · 🔒" : ""}</div>
+        <div class="timeline-header">
+          <h3 class="timeline-title">${entry.title}</h3>
+          <button class="timeline-heart${favActive ? " is-favorited" : ""}" aria-label="Favorite ${entry.title}">${favActive ? "♥" : "♡"}</button>
+        </div>
+        <p class="timeline-blurb">${entry.blurb || ""}</p>
+      </div>
+    `;
+
+    const heartBtn = el.querySelector(".timeline-heart");
+    heartBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const active = toggleFavorite(entry.id);
+      syncFavoriteState(entry.id, active);
+      if (currentView === "favorites") renderFavoritesView();
+    });
+
+    el.addEventListener("click", () => {
+      if (isFuture) {
+        showLockToast(`🔒 Unlocks ${entry.date ? formatDate(entry.date) : "(date TBD)"}`);
+        return;
+      }
+      openCinematicOverlay(entry);
+    });
+
+    return el;
+  }
+
+  function renderTimeline() {
+    timelineWrap.innerHTML = "";
+    const track = document.createElement("div");
+    track.className = "timeline-track";
+
+    const now = new Date();
+    const entries = [...(SITE_CONFIG.timeline || [])].sort((a, b) => {
+      const da = a.date ? new Date(a.date) : new Date("9999-12-31");
+      const db = b.date ? new Date(b.date) : new Date("9999-12-31");
+      return da - db;
+    });
+
+    let todayInserted = false;
+    entries.forEach((entry) => {
+      const entryDate = entry.date ? new Date(entry.date + "T00:00:00") : null;
+      const isFuture = !entryDate || entryDate > now;
+      if (isFuture && !todayInserted) {
+        track.appendChild(buildTodayMarker());
+        todayInserted = true;
+      }
+      track.appendChild(buildTimelineEntry(entry, isFuture));
+    });
+    if (!todayInserted) track.appendChild(buildTodayMarker());
+
+    timelineWrap.appendChild(track);
+
+    if (hasGSAP && !reduceMotion) {
+      gsap.from(".timeline-entry, .timeline-today", { opacity: 0, x: -14, duration: 0.5, stagger: 0.06, ease: "power2.out" });
+    }
+  }
+
+  /* ============================================================
+     Favorites view
+     ============================================================ */
+  function renderFavoritesView() {
+    favoritesWrap.innerHTML = "";
+    const ids = getFavoriteIds();
+    const items = ids.map((id) => itemsById[id]).filter(Boolean);
+
+    if (items.length === 0) {
+      favoritesWrap.innerHTML = `
+        <div class="favorites-empty">
+          <div class="icon">♡</div>
+          <h3>No Favorites Yet</h3>
+          <p>Tap the heart on anything you love — episodes, memories, or the letter — and it'll show up here.</p>
+        </div>
+      `;
+      return;
+    }
+
+    const grid = document.createElement("div");
+    grid.className = "favorites-grid";
+    items.forEach((item) => grid.appendChild(buildCard(item, item._layout || "poster")));
+    favoritesWrap.appendChild(grid);
+
+    if (hasGSAP && !reduceMotion) {
+      gsap.from(".favorites-grid .card", { opacity: 0, y: 16, duration: 0.4, stagger: 0.05, ease: "power2.out" });
+    }
+  }
+
+  /* ============================================================
+     View switching (Home / Timeline / Favorites)
+     ============================================================ */
+  function switchView(name) {
+    currentView = name;
+    document.querySelectorAll(".view").forEach((v) => v.classList.toggle("hidden", v.id !== `view-${name}`));
+    document.querySelectorAll(".nav-links a").forEach((a) => a.classList.toggle("active", a.dataset.view === name));
+    if (siteFooter) siteFooter.classList.toggle("hidden", name !== "home");
+    window.scrollTo({ top: 0, behavior: reduceMotion ? "auto" : "smooth" });
+    if (name === "timeline") renderTimeline();
+    if (name === "favorites") renderFavoritesView();
+  }
+
+  document.querySelectorAll(".nav-links a[data-view]").forEach((a) => {
+    a.addEventListener("click", (e) => {
+      e.preventDefault();
+      switchView(a.dataset.view);
+    });
+  });
 
   /* ============================================================
      Profile picker — rendered from config (supports photos + locked profiles)
@@ -641,11 +845,36 @@
   }
 
   /* ============================================================
+     Nav timer — live "together for" counter, ticks every second
+     ============================================================ */
+  function updateNavTimer() {
+    if (!navTimerValue) return;
+    const start = new Date(SITE_CONFIG.couple.startDate);
+    const diffMs = Math.max(0, Date.now() - start.getTime());
+    const totalSeconds = Math.floor(diffMs / 1000);
+
+    const days = Math.floor(totalSeconds / 86400);
+    const hours = Math.floor((totalSeconds % 86400) / 3600);
+    const mins = Math.floor((totalSeconds % 3600) / 60);
+    const secs = totalSeconds % 60;
+    const pad = (n) => String(n).padStart(2, "0");
+
+    navTimerValue.innerHTML =
+      `${days}<span class="unit">d</span>` +
+      `${pad(hours)}<span class="unit">h</span>` +
+      `${pad(mins)}<span class="unit">m</span>` +
+      `${pad(secs)}<span class="unit">s</span>`;
+  }
+
+  /* ============================================================
      Init
      ============================================================ */
+  buildItemsIndex();
   renderHero();
   renderRows();
   renderProfilePicker();
   renderNavSwitch();
   runIntro();
+  updateNavTimer();
+  setInterval(updateNavTimer, 1000);
 })();

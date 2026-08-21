@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Us — Season One</title>
+<title>Us. — One Month, Season One</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -20,7 +20,7 @@
     <div class="intro-ring" id="intro-ring"></div>
     <div class="intro-k" id="intro-k">K</div>
   </div>
-  <p class="intro-hint" id="intro-hint"><Textarea:cols:rows>Tap anywhere to continue</Textarea:cols:rows></p>
+  <p class="intro-hint" id="intro-hint">tap anywhere to continue</p>
 </section>
 
 <!-- Profile picker -->
@@ -39,11 +39,17 @@
     <div class="topnav-left">
       <span class="logo small">K<span class="logo-dot">.</span></span>
       <nav class="nav-links">
-        <a href="#" class="active">Home</a>
-        <a href="#">Timeline</a>
-        <a href="#">Favorites</a>
+        <a href="#" class="active" data-view="home">Home</a>
+        <a href="#" data-view="timeline">Timeline</a>
+        <a href="#" data-view="favorites">Favorites</a>
       </nav>
     </div>
+
+    <div class="nav-timer" id="nav-timer" title="Together since July 22, 2026">
+      <span class="nav-timer-label">Together For</span>
+      <span class="nav-timer-value" id="nav-timer-value">—</span>
+    </div>
+
     <div class="topnav-right">
       <input type="text" id="search-input" class="search-input" placeholder="Search our story..." />
       <div class="profile-switch" id="profile-switch" role="group" aria-label="Switch profile"></div>
@@ -51,12 +57,21 @@
     </div>
   </header>
 
-  <section class="hero" id="hero"></section>
+  <div class="view" id="view-home">
+    <section class="hero" id="hero"></section>
+    <main id="rows-container" class="rows-container"></main>
+  </div>
 
-  <main id="rows-container" class="rows-container"></main>
+  <div class="view hidden" id="view-timeline">
+    <div class="timeline-wrap scroll-red" id="timeline-wrap"></div>
+  </div>
 
-  <footer class="site-footer">
-    <p>Made with love (and way too many hours of CSS) — Happy One Month, Kristina 🤎</p>
+  <div class="view hidden" id="view-favorites">
+    <div class="favorites-wrap scroll-red" id="favorites-wrap"></div>
+  </div>
+
+  <footer class="site-footer" id="site-footer">
+    <p>Happy One Month, Kristina 🤎</p>
   </footer>
 </div>
 

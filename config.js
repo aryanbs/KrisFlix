@@ -45,6 +45,8 @@ const SITE_CONFIG = {
   },
 
   couple: {
+    // Everything you'd want to change for the nav timer lives right here.
+    startDate: "2026-07-22T00:00:00",
     milestoneLabel: "Day 30 of forever",
     milestoneNote: "One month down. Every episode so far has been worth it."
   },
@@ -162,5 +164,28 @@ const SITE_CONFIG = {
         }
       ]
     }
+  ],
+
+  /* ============================================================
+     Timeline — chronological view. IDs that match an item id above
+     (e.g. "first-hello", "the-first-date") share favorite/heart state
+     with that card automatically — no extra wiring needed.
+
+     Entries dated in the future are automatically shown locked, and
+     unlock themselves the moment that date arrives. Use date: null +
+     dateLabel: "TBD" for future plans without a fixed date yet.
+     "milestone: true" gives an entry a bigger, brighter dot on the line.
+     ============================================================ */
+  timeline: [
+    { id: "first-hello", title: "The First Hello", date: "2026-06-28", blurb: "Where it all started.", synopsis: "In which one of us finally says something, and the other one actually replies. A slow start with a great payoff.", gradient: "poster-b", media: { type: "", src: "" } },
+    { id: "nervous-texting", title: "Nervous Texting 101", date: "2026-07-05", blurb: "A masterclass in overthinking.", synopsis: "Featuring seventeen drafts of a single text message and one very unnecessary amount of screenshotting friends for advice.", gradient: "poster-c", media: { type: "", src: "" } },
+    { id: "the-first-date", title: "The First Date", date: "2026-07-14", blurb: "Nobody knew where to sit.", synopsis: "Two people, one table, and a conversation that somehow never ran out. A quiet classic.", gradient: "poster-d", media: { type: "", src: "" } },
+    { id: "day-one", title: "Day One — Officially Us", date: "2026-07-22", blurb: "The day it became real.", synopsis: "REPLACE_WITH_REAL_MEMORY: write what actually happened the day you made it official.", gradient: "poster-a", milestone: true, media: { type: "", src: "" } },
+    { id: "falling-slowly", title: "Falling, Slowly", date: "2026-07-28", blurb: "Then all at once.", synopsis: "The moment it stopped being 'talking' and started being something worth showing up for, every day.", gradient: "poster-f", media: { type: "", src: "" } },
+    { id: "dinner-bad-jokes", title: "Dinner & Bad Jokes", date: "2026-08-05", blurb: "5-star food, 2-star puns.", synopsis: "A romantic dinner, mostly derailed by terrible jokes that somehow landed anyway.", gradient: "poster-c", media: { type: "", src: "" } },
+    { id: "late-night-drives", title: "Late Night Drives", date: "2026-08-15", blurb: "No destination, all vibes.", synopsis: "Just the two of us, questionable music choices, and conversations that got a little too honest.", gradient: "poster-d", media: { type: "", src: "" } },
+    { id: "one-month-today", title: "One Month, Today", date: "2026-08-21", blurb: "Still no notes.", synopsis: "Thirty-something days in, and somehow it just keeps getting better. Here's to the next one.", gradient: "poster-a", milestone: true, media: { type: "", src: "" } },
+    { id: "two-months", title: "Two Months and Counting", date: "2026-09-22", blurb: "Next season drops soon.", synopsis: "If month one was this good, we're not worried about what's next.", gradient: "poster-e", media: { type: "", src: "" } },
+    { id: "the-trip", title: "The Trip We Haven't Taken Yet", date: null, dateLabel: "TBD", blurb: "Currently in pre-production.", synopsis: "Somewhere new, just the two of us. Release date: TBD, but it's happening.", gradient: "poster-b", media: { type: "", src: "" } }
   ]
 };
