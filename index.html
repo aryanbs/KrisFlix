@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Us — Season One</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<div class="grain-overlay"></div>
+
+<!-- Cinematic intro (Netflix-style "tadum" splash, stylized K) -->
+<section id="intro-splash" class="intro-splash" aria-label="Intro animation">
+  <button id="intro-skip" class="intro-skip">Skip Intro</button>
+  <div class="intro-stage">
+    <div class="intro-ring" id="intro-ring"></div>
+    <div class="intro-k" id="intro-k">K</div>
+  </div>
+  <p class="intro-hint" id="intro-hint"><Textarea:cols:rows>Tap anywhere to continue</Textarea:cols:rows></p>
+</section>
+
+<!-- Profile picker -->
+<section id="profile-screen" class="profile-screen hidden">
+  <div class="profile-content">
+    <h1 class="logo">K<span class="logo-dot">.</span></h1>
+    <h2 class="profile-title">Who's Continuing the Story?</h2>
+    <div class="profiles" id="profiles"></div>
+  </div>
+</section>
+
+<!-- Browse screen -->
+<div id="browse-screen" class="browse-screen hidden">
+
+  <header class="topnav" id="topnav">
+    <div class="topnav-left">
+      <span class="logo small">K<span class="logo-dot">.</span></span>
+      <nav class="nav-links">
+        <a href="#" class="active">Home</a>
+        <a href="#">Timeline</a>
+        <a href="#">Favorites</a>
+      </nav>
+    </div>
+    <div class="topnav-right">
+      <input type="text" id="search-input" class="search-input" placeholder="Search our story..." />
+      <div class="profile-switch" id="profile-switch" role="group" aria-label="Switch profile"></div>
+      <div class="nav-avatar" id="current-avatar">K</div>
+    </div>
+  </header>
+
+  <section class="hero" id="hero"></section>
+
+  <main id="rows-container" class="rows-container"></main>
+
+  <footer class="site-footer">
+    <p>Made with love (and way too many hours of CSS) — Happy One Month, Kristina 🤎</p>
+  </footer>
+</div>
+
+<!-- Unified cinematic overlay — used for every card, including the Letter -->
+<div id="cinematic-overlay" class="cinematic-overlay hidden">
+  <div class="overlay-bg" id="overlay-bg"></div>
+  <div class="overlay-scrim"></div>
+  <button class="overlay-close" id="overlay-close" aria-label="Close">✕</button>
+  <div class="overlay-content scroll-red" id="overlay-content">
+    <div class="overlay-eyebrow" id="overlay-eyebrow"></div>
+    <h2 class="overlay-title" id="overlay-title"></h2>
+    <p class="overlay-subtitle hidden" id="overlay-subtitle"></p>
+    <div class="overlay-meta" id="overlay-meta"></div>
+    <div class="overlay-actions" id="overlay-actions">
+      <button class="btn btn-primary" id="overlay-play">▶ Play</button>
+      <button class="btn btn-music hidden" id="overlay-music">🎵 Music</button>
+    </div>
+    <div class="overlay-text" id="overlay-text"></div>
+  </div>
+  <div class="overlay-toast" id="overlay-toast"></div>
+</div>
+
+<!-- Clean fullscreen image viewer, opened from a Play button on photo items -->
+<div id="image-lightbox" class="image-lightbox hidden">
+  <button class="lightbox-close" id="lightbox-close" aria-label="Close image">✕</button>
+  <div class="lightbox-stage" id="lightbox-stage"></div>
+</div>
+
+<audio id="letter-audio" loop preload="none"></audio>
+
+<div class="lock-toast" id="lock-toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js" defer></script>
+<script src="config.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
